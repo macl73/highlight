@@ -1,5 +1,35 @@
 import React, { useState } from 'react';
 
+export function componentWrapper(Component) {
+    return class extends React.Component {
+        constructor(props) {
+            super(props)
+            this.views = this.props.views
+        };
+
+        componentType() {
+            if (this.views > 1000) {
+                return <Popular {...this.props}>
+                        <Component {...this.props}/>
+                    </Popular>
+            } else if (this.views < 100) {
+                return <New {...this.props}>
+                        <Component {...this.props}/>
+                    </New>
+            } else {
+                return <Component {...this.props}/>
+            };
+        };
+
+        render() {
+            return this.componentType()
+        };
+    };
+};
+
+const WrappedVideo = componentWrapper(Video);
+const WrappedArticle = componentWrapper(Article);
+
 function New(props) {
     return (
         <div className="wrap-item wrap-item-new">
@@ -37,16 +67,16 @@ function Video(props) {
 };
 
 function List(props) {
-    return props.list.map(item => {
+    return props.list.map((item, index) => {
         switch (item.type) {
             case 'video':
                 return (
-                    <Video {...item} />
+                    <WrappedVideo key={index} {...item} />
                 );
 
             case 'article':
                 return (
-                    <Article {...item} />
+                    <WrappedArticle key={index} {...item} />
                 );
         }
     });
